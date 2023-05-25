@@ -1,0 +1,5 @@
+rootProject.name = 'ph-ee-id-account-validator-impl'
+gradle.ext{
+    app_username = '<username>'
+    app_password = '<password>'
+}
