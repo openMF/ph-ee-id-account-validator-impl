@@ -1,0 +1,94 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.10'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'eclipse'
+	id 'maven-publish'
+	id "com.jfrog.artifactory" version "4.24.23"
+}
+
+group = 'org.mifos'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+def artifactId = 'account-conncetor-validation-impl'
+def versionNumber = version
+
+repositories {
+	mavenCentral()
+	maven {
+		url = uri('https://fynarfin.jfrog.io/artifactory/fyn-libs-snapshot-local/')
+	}
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'io.rest-assured:rest-assured:4.4.0'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
+	implementation 'io.camunda:zeebe-client-java:1.3.1'
+	implementation 'org.mifos:ph-ee-connector-common:1.4.0-SNAPSHOT'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+sourceSets {
+	main {
+		java {
+			// Include all source files by default
+			srcDirs = ['src/main/java']
+
+			// Exclude the package if a system property is set
+			if (System.getProperty('gsma')) {
+				exclude 'org/mifos/pheeidmaapperaccountvalidatorimp/mojaloopconnector/**'
+			}
+			else if(System.getProperty('mojaloop')){
+				exclude 'org/mifos/accountvalidatorconnector/gsmaconnector/**'
+
+			}
+		}
+	}
+}
+
+jar {
+	// Set the archive name based on the condition
+	if (System.getProperty('gsma')) {
+		archiveFileName = "account-validator-connector-gsma-${project.version}.jar"
+	}
+	else if (System.getProperty('mojaloop')) {
+		archiveFileName = "account-validator-connector-mojaloop-${project.version}.jar"
+	}
+}
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from(components.java)
+		}
+	}
+}
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+artifactory {
+	contextUrl = 'https://fynarfin.jfrog.io/artifactory' // base artifactory url
+	publish {
+		repository {
+			repoKey = 'fyn-libs-snapshot'    //Artifactory repository key to publish to
+			//username = 'avik@fynarfin.io'    //publisher user name
+			//password = '****'                //publisher password
+			username = gradle.app_username
+			password = gradle.app_password
+			maven = true
+		}
+		defaults {
+			publications('mavenJava')
+		}
+	}
+
+}
+
+artifactoryPublish {
+	dependsOn jar
+}
