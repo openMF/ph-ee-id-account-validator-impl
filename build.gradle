@@ -16,7 +16,7 @@ def versionNumber = version
 repositories {
 	mavenCentral()
 	maven {
-		url = uri('https://fynarfin.jfrog.io/artifactory/fyn-libs-snapshot-local/')
+		url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
 	}
 }
 
@@ -72,7 +72,7 @@ tasks.withType(JavaCompile) {
 }
 
 artifactory {
-	contextUrl = 'https://fynarfin.jfrog.io/artifactory' // base artifactory url
+	contextUrl = 'https://jfrog.sandbox.fynarfin.io/artifactory' // base artifactory url
 	publish {
 		repository {
 			repoKey = 'fyn-libs-snapshot'    //Artifactory repository key to publish to
