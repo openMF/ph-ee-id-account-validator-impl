@@ -1,4 +1,4 @@
 gsma_connector:
-  contactpoint: "https://amsmifos.sandbox.fynarfin.io"
+  contactpoint: "https://ams-mifos.sandbox.fynarfin.io"
   endpoint:
     account-status: "/ams/accounts/identifierType/identifierId/status"
