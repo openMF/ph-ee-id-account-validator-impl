@@ -1,23 +1,30 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '2.7.10'
-	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'org.springframework.boot' version '2.7.18'
+	id 'io.spring.dependency-management' version '1.1.0'
 	id 'eclipse'
 	id 'maven-publish'
-	id "com.jfrog.artifactory" version "4.24.23"
+	id "com.jfrog.artifactory" version "4.29.0"
 }
 
 group = 'org.mifos'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1-gazelle'
 sourceCompatibility = '17'
 def artifactId = 'account-conncetor-validation-impl'
 def versionNumber = version
 
 repositories {
-	mavenCentral()
-	maven {
-		url = uri('https://jfrog.sandbox.fynarfin.io/artifactory/fyn-libs-snapshot')
-	}
+    mavenCentral()
+    // mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+    maven {
+        url = uri('https://mifos.jfrog.io/artifactory/phee-gradle-local')
+    }    
+    maven {
+        url = uri('https://mifos.jfrog.io/artifactory/mifosx-gradle-local')
+    }
 }
 
 dependencies {
@@ -26,7 +33,8 @@ dependencies {
 	implementation 'io.rest-assured:rest-assured:4.4.0'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
 	implementation 'io.camunda:zeebe-client-java:1.3.1'
-	implementation 'org.mifos:ph-ee-connector-common:1.4.0-SNAPSHOT'
+	implementation 'org.mifos:ph-ee-connector-common:1.8.1-gazelle'
+	// implementation 'org.mifos:ph-ee-connector-common:1.4.0-SNAPSHOT'
 }
 
 tasks.named('test') {
@@ -71,23 +79,40 @@ tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
-artifactory {
-	contextUrl = 'https://jfrog.sandbox.fynarfin.io/artifactory' // base artifactory url
-	publish {
-		repository {
-			repoKey = 'fyn-libs-snapshot'    //Artifactory repository key to publish to
-			//username = 'avik@fynarfin.io'    //publisher user name
-			//password = '****'                //publisher password
-			username = gradle.app_username
-			password = gradle.app_password
-			maven = true
-		}
-		defaults {
-			publications('mavenJava')
-		}
-	}
 
+artifactory {
+    contextUrl = 'https://mifos.jfrog.io/artifactory'
+    publish {
+        repository {
+            repoKey = 'phee-gradle-local' // Use 'oss-release-local' for release versions
+            username = System.getenv('MIFOS_ARTIFACTORY_USER') 
+            password = System.getenv('MIFOS_ARTIFACTORY_TOKEN') 
+        }
+        defaults {
+            publications('mavenJava')
+            publishArtifacts = true
+            publishPom = true
+            publishBuildInfo = false //  build info publishing
+        }
+    }
 }
+// artifactory {
+// 	contextUrl = 'https://jfrog.sandbox.fynarfin.io/artifactory' // base artifactory url
+// 	publish {
+// 		repository {
+// 			repoKey = 'fyn-libs-snapshot'    //Artifactory repository key to publish to
+// 			//username = 'avik@fynarfin.io'    //publisher user name
+// 			//password = '****'                //publisher password
+// 			username = gradle.app_username
+// 			password = gradle.app_password
+// 			maven = true
+// 		}
+// 		defaults {
+// 			publications('mavenJava')
+// 		}
+// 	}
+
+// }
 
 artifactoryPublish {
 	dependsOn jar
