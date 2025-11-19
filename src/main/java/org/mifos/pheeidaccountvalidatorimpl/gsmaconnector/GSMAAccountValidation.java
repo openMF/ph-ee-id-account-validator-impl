@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j  
 @Service(value = "gsma")
 public class GSMAAccountValidation extends AccountValidationService {
     @Value("${gsma-connector.contactpoint}")
@@ -21,18 +24,23 @@ public class GSMAAccountValidation extends AccountValidationService {
     @Override
     public Boolean validateAccount(String financialAddress, String tenant, String paymentModality, String payeeIdentity, String callbackURL){
         accountStatusEndpoint = accountStatusEndpoint.replaceAll("identifierType", paymentModality);
-        accountStatusEndpoint = accountStatusEndpoint.replaceAll("identifierId", financialAddress);
+        //accountStatusEndpoint = accountStatusEndpoint.replaceAll("identifierId", financialAddress);
+        accountStatusEndpoint = accountStatusEndpoint.replaceAll("identifierId", payeeIdentity);
         RequestSpecification requestSpec = new RequestSpecBuilder().build();
+        log.info("TDDEBUG> GSMA Connector Contact Point: " + gsmaConnectorContactPoint);
+        log.info("TDDEBUG> GSMA Account Status Endpoint: " + accountStatusEndpoint);
         requestSpec.relaxedHTTPSValidation();
 
         Response response = RestAssured.given(requestSpec)
                 .baseUri(gsmaConnectorContactPoint)
                 .header("Platform-TenantId", tenant)
+                .log().all() // <-- Log the request details here
                 .when()
                 .get(accountStatusEndpoint)
                 .andReturn();
         Integer statusCode = response.then().extract().statusCode();
         String responseBody = response.then().extract().body().asString();
+        log.info("TDDEBUG responseBody is {} " , responseBody ); 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, String> responseMap = null;
         try {
